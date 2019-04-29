@@ -13,10 +13,10 @@ import torch.backends.cudnn as cudnn
 from tensorboardX import SummaryWriter
 from models.capsule import CapsuleLoss
 from easydict import EasyDict
-os.environ['CUDA_VISIBLE_DEVICES'] = "2"
+# os.environ['CUDA_VISIBLE_DEVICES'] = "0"
 
 parser = argparse.ArgumentParser(description='PyTorch CIFAR Dataset Training')
-#parser.add_argument('--work-path', required=True, type=str)
+# parser.add_argument('--work-path', required=True, type=str)
 parser.add_argument('--work-path', default="./experiments/cifar10/capsule", type=str)
 parser.add_argument('--resume', action='store_true',
                     help='resume from checkpoint')
