@@ -13,7 +13,7 @@ import torch.backends.cudnn as cudnn
 from tensorboardX import SummaryWriter
 from models.capsule import CapsuleLoss
 from easydict import EasyDict
-# os.environ['CUDA_VISIBLE_DEVICES'] = "0"
+os.environ['CUDA_VISIBLE_DEVICES'] = "0"
 
 parser = argparse.ArgumentParser(description='PyTorch CIFAR Dataset Training')
 # parser.add_argument('--work-path', required=True, type=str)
@@ -28,6 +28,11 @@ logger = Logger(log_file_name=args.work_path + '/log.txt',
 
 def train(train_loader, net, criterion, optimizer, epoch, device):
     global writer
+
+    try:
+        state = config.use_capsule
+    except:
+        config.use_capsule = False
 
     start = time.time()
     net.train()
@@ -99,6 +104,11 @@ def train(train_loader, net, criterion, optimizer, epoch, device):
 
 def test(test_loader, net, criterion, optimizer, epoch, device):
     global best_prec, writer
+
+    try:
+        state = config.use_capsule
+    except:
+        config.use_capsule = False
 
     net.eval()
     if config.use_capsule:
