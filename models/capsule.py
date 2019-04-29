@@ -100,14 +100,14 @@ class CapsuleNet(nn.Module):
         classes = (x ** 2).sum(dim=-1) ** 0.5
         classes = F.softmax(classes, dim=-1)
 
-        if y is None:
+        # if y is None:
             # In all batches, get the most active capsule.
-            _, max_length_indices = classes.max(dim=1)
-            y = Variable(torch.eye(self.NUM_CLASSES)).cuda().index_select(dim=0, index=max_length_indices.data)
+        #    _, max_length_indices = classes.max(dim=1)
+        #    y = Variable(torch.eye(self.NUM_CLASSES)).cuda().index_select(dim=0, index=max_length_indices.data)
 
-        reconstructions = self.decoder((x * y[:, :, None]).view(x.size(0), -1))
+        # reconstructions = self.decoder((x * y[:, :, None]).view(x.size(0), -1))
 
-        return classes, reconstructions
+        return classes #, reconstructions
 
 
 class CapsuleLoss(nn.Module):
@@ -122,9 +122,9 @@ class CapsuleLoss(nn.Module):
         margin_loss = labels * left + 0.5 * (1. - labels) * right
         margin_loss = margin_loss.sum()
 
-        assert torch.numel(images) == torch.numel(reconstructions)
-        images = images.view(reconstructions.size()[0], -1)
-        reconstruction_loss = self.reconstruction_loss(reconstructions, images)
+        # assert torch.numel(images) == torch.numel(reconstructions)
+        # images = images.view(reconstructions.size()[0], -1)
+        reconstruction_loss = 0 # self.reconstruction_loss(reconstructions, images)
 
         return (margin_loss + 0.0005 * reconstruction_loss) / images.size(0)
 
