@@ -58,8 +58,8 @@ def train(train_loader, net, criterion, optimizer, epoch, device):
 
         elif config.use_capsule:
 
-            classes, reconstructions = net(inputs, targets)
-            loss = criterion(inputs, targets, classes, reconstructions)
+            classes = net(inputs, targets)
+            loss = criterion(inputs, targets, classes, None)
 
         else:
             outputs = net(inputs)
@@ -125,8 +125,8 @@ def test(test_loader, net, criterion, optimizer, epoch, device):
             inputs, targets = inputs.to(device), targets.to(device)
 
             if config.use_capsule:
-                classes, reconstructions = net(inputs)
-                loss = criterion(inputs, targets, classes, reconstructions)
+                classes = net(inputs)
+                loss = criterion(inputs, targets, classes, None)
             else:
                 outputs = net(inputs)
                 loss = criterion(outputs, targets)
