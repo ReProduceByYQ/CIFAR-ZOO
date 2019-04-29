@@ -4,11 +4,12 @@ import math
 import shutil
 import logging
 import numpy as np
+import torch.nn.functional as F
 
 import torch
 import torchvision
 import torchvision.transforms as transforms
-
+import torch.nn as nn
 
 class Cutout(object):
     def __init__(self, n_holes, length):
@@ -175,3 +176,22 @@ def adjust_learning_rate(optimizer, epoch, config):
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
     return lr
+
+
+class CapsuleLoss(nn.Module):
+    def __init__(self):
+        super(CapsuleLoss, self).__init__()
+        self.reconstruction_loss = nn.MSELoss(size_average=False)
+
+    def forward(self, images, labels, classes, reconstructions):
+        left = F.relu(0.9 - classes, inplace=True) ** 2
+        right = F.relu(classes - 0.1, inplace=True) ** 2
+
+        margin_loss = labels * left + 0.5 * (1. - labels) * right
+        margin_loss = margin_loss.sum()
+
+        assert torch.numel(images) == torch.numel(reconstructions)
+        images = images.view(reconstructions.size()[0], -1)
+        reconstruction_loss = self.reconstruction_loss(reconstructions, images)
+
+        return (margin_loss + 0.0005 * reconstruction_loss) / images.size(0)

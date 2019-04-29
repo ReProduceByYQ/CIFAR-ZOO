@@ -1,4 +1,6 @@
 # -*-coding:utf-8-*-
+from models import *
+from utils import *
 import argparse
 import yaml
 import time
@@ -9,13 +11,13 @@ import torchvision.transforms as transforms
 import torch.backends.cudnn as cudnn
 
 from tensorboardX import SummaryWriter
-
+from models.capsule import CapsuleLoss
 from easydict import EasyDict
-from models import *
-from utils import *
+os.environ['CUDA_VISIBLE_DEVICES'] = "2"
 
 parser = argparse.ArgumentParser(description='PyTorch CIFAR Dataset Training')
-parser.add_argument('--work-path', required=True, type=str)
+#parser.add_argument('--work-path', required=True, type=str)
+parser.add_argument('--work-path', default="./experiments/cifar10/capsule", type=str)
 parser.add_argument('--resume', action='store_true',
                     help='resume from checkpoint')
 
@@ -29,6 +31,9 @@ def train(train_loader, net, criterion, optimizer, epoch, device):
 
     start = time.time()
     net.train()
+
+    if config.use_capsule:
+        criterion = CapsuleLoss()
 
     train_loss = 0
     correct = 0
@@ -45,6 +50,12 @@ def train(train_loader, net, criterion, optimizer, epoch, device):
             outputs = net(inputs)
             loss = mixup_criterion(
                 criterion, outputs, targets_a, targets_b, lam)
+
+        elif config.use_capsule:
+
+            classes, reconstructions = net(inputs, targets)
+            loss = criterion(inputs, targets, classes, reconstructions)
+
         else:
             outputs = net(inputs)
             loss = criterion(outputs, targets)
@@ -90,6 +101,8 @@ def test(test_loader, net, criterion, optimizer, epoch, device):
     global best_prec, writer
 
     net.eval()
+    if config.use_capsule:
+        criterion = CapsuleLoss()
 
     test_loss = 0
     correct = 0
@@ -100,8 +113,13 @@ def test(test_loader, net, criterion, optimizer, epoch, device):
     with torch.no_grad():
         for batch_index, (inputs, targets) in enumerate(test_loader):
             inputs, targets = inputs.to(device), targets.to(device)
-            outputs = net(inputs)
-            loss = criterion(outputs, targets)
+
+            if config.use_capsule:
+                classes, reconstructions = net(inputs)
+                loss = criterion(inputs, targets, classes, reconstructions)
+            else:
+                outputs = net(inputs)
+                loss = criterion(outputs, targets)
 
             test_loss += loss.item()
             _, predicted = outputs.max(1)
