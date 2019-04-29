@@ -11,6 +11,7 @@ from .shake_shake import *
 from .sknet import *
 from .genet import *
 from .cbam_resnext import *
+from .capsule import *
 
 
 def get_model(config):
